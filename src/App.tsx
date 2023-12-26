@@ -1,21 +1,11 @@
 import { useEffect, useState } from "react";
+import { getPointNeighbors, gridToLocation, reconstructPath } from "./utils";
+import { Location } from "./types";
+import DataPanel from "./DataPanel";
+import Grid, { gridInit } from "./Grid";
+import ButtonPanel from "./ButtonPanel";
 
 function App() {
-  const gridInit = [
-    [" ", " ", " ", " ", " ", "#", " ", " ", " ", " ", " ", "#", " ", " "],
-    [" ", " ", " ", " ", " ", "#", " ", " ", " ", " ", " ", "#", " ", " "],
-    [" ", " ", " ", " ", " ", "#", " ", " ", " ", " ", " ", "#", " ", " "],
-    [" ", " ", " ", " ", " ", "#", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", "#", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", "#", " ", " ", " ", " ", " ", "#", " ", " "],
-    [" ", " ", " ", " ", " ", "#", " ", " ", " ", " ", " ", "#", " ", " "],
-    [" ", " ", " ", " ", " ", "#", " ", " ", " ", " ", " ", "#", " ", " "],
-    [" ", " ", " ", " ", " ", "#", " ", " ", " ", " ", " ", "#", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#", " ", " "],
-    [" ", " ", " ", " ", " ", "#", " ", " ", " ", " ", " ", "#", " ", " "],
-    [" ", " ", " ", " ", " ", "#", " ", " ", " ", " ", " ", "#", " ", "Z"],
-  ];
   const startInit = "0,0";
   const [grid, setGrid] = useState(gridInit);
 
@@ -53,137 +43,9 @@ function App() {
   const [hideData, setHideData] = useState<boolean>(false);
   const [lastPosition, setLastPosition] = useState<string>("");
 
-  const SPEED_INCREMENT = 50;
-
   const setSpeed = (speed: number) => {
     setTheSpeed(speed);
     localStorage.setItem("speed", JSON.stringify(speed));
-  };
-
-  const gridToLocation = (inGrid: string[][]) => {
-    const localGrid: Location<string>[][] = [];
-    for (let row = 0; row < inGrid.length; row++) {
-      const tempRow: Location<string>[] = [];
-      for (let col = 0; col < inGrid[row].length; col++) {
-        tempRow.push({
-          col,
-          row,
-          value: inGrid[row][col],
-          id: `${col},${row}`,
-        });
-      }
-      localGrid.push(tempRow);
-    }
-    return localGrid;
-  };
-
-  const getPointNeighbors = (
-    point: Location<string>,
-    grid: string[][],
-    includeDiagonals = false
-  ) => {
-    const gpnNeighbors: Location<string>[] = [];
-
-    const left = point.col - 1 >= 0 && grid[point.row][point.col - 1];
-    const right =
-      point.col + 1 < grid[point.row]?.length && grid[point.row][point.col + 1];
-    const above = point.row - 1 >= 0 && grid[point.row - 1][point.col];
-    const below =
-      point.row + 1 < grid?.length && grid[point.row + 1][point.col];
-
-    const leftAbove =
-      left !== false && above !== false && grid[point.row - 1][point.col - 1];
-    const rightAbove =
-      right !== false && above !== false && grid[point.row - 1][point.col + 1];
-    const leftBelow =
-      left !== false && below !== false && grid[point.row + 1][point.col - 1];
-    const rightBelow =
-      right !== false && below !== false && grid[point.row + 1][point.col + 1];
-
-    if (left !== false) {
-      gpnNeighbors.push({
-        col: point.col - 1,
-        row: point.row,
-        id: `${point.col - 1},${point.row}`,
-        value: grid[point.row][point.col - 1],
-      });
-    }
-    if (right !== false) {
-      gpnNeighbors.push({
-        col: point.col + 1,
-        row: point.row,
-        id: `${point.col + 1},${point.row}`,
-        value: grid[point.row][point.col + 1],
-      });
-    }
-    if (above !== false) {
-      gpnNeighbors.push({
-        col: point.col,
-        row: point.row - 1,
-        id: `${point.col},${point.row - 1}`,
-        value: grid[point.row - 1][point.col],
-      });
-    }
-    if (below !== false) {
-      gpnNeighbors.push({
-        col: point.col,
-        row: point.row + 1,
-        id: `${point.col},${point.row + 1}`,
-        value: grid[point.row + 1][point.col],
-      });
-    }
-    if (includeDiagonals && leftAbove !== false) {
-      gpnNeighbors.push({
-        col: point.col - 1,
-        row: point.row - 1,
-        id: `${point.col - 1},${point.row - 1}`,
-        value: grid[point.row - 1][point.col - 1],
-      });
-    }
-    if (includeDiagonals && rightAbove !== false) {
-      gpnNeighbors.push({
-        col: point.col + 1,
-        row: point.row - 1,
-        id: `${point.col + 1},${point.row - 1}`,
-        value: grid[point.row - 1][point.col + 1],
-      });
-    }
-    if (includeDiagonals && leftBelow !== false) {
-      gpnNeighbors.push({
-        col: point.col - 1,
-        row: point.row + 1,
-        id: `${point.col - 1},${point.row + 1}`,
-        value: grid[point.row + 1][point.col - 1],
-      });
-    }
-    if (includeDiagonals && rightBelow !== false) {
-      gpnNeighbors.push({
-        col: point.col + 1,
-        row: point.row + 1,
-        id: `${point.col + 1},${point.row + 1}`,
-        value: grid[point.row + 1][point.col + 1],
-      });
-    }
-
-    return gpnNeighbors;
-  };
-
-  const reconstructPath = (
-    start: string,
-    goal: string,
-    cameFrom: Record<string, string>
-  ) => {
-    let current = goal;
-    // A path is a sequence of edges, but often it’s easier to store the nodes
-    const path: string[] = [];
-
-    while (current !== start && current !== undefined) {
-      path.push(current);
-      current = cameFrom[current];
-    }
-    path.push(start); // optional
-    path.reverse(); // optional
-    return path;
   };
 
   useEffect(() => {
@@ -331,197 +193,48 @@ function App() {
     return styles.join(" ").trim();
   };
 
-  const buttonStyles =
-    "flex items-center justify-center mr-4 my-2 p-2 bg-gray-400 border border-gray-500 rounded-md hover:bg-gray-500 hover:text-slate-200";
   return (
     <div className={`p-4 m-8 text-blue-600`}>
       {/* Buttons */}
       {hasFoundGoal && <p>Found Goal</p>}
-      <div className="flex">
-        <button
-          className={buttonStyles}
-          onClick={() => {
-            const temp = timeMode === "play" ? "pause" : "play";
-            setTimeMode(temp);
-            localStorage.setItem("timeMode", temp);
-            setTick(tick + 1);
-          }}
-        >
-          {timeMode === "play" ? "pause" : "play"}
-        </button>
-        <button
-          className={buttonStyles.concat(" w-12")}
-          onClick={() => {
-            setTick(tick + 1);
-          }}
-        >
-          {tick}
-        </button>
-
-        <button
-          className={buttonStyles}
-          onClick={() => {
-            setSpeed(speed + SPEED_INCREMENT);
-          }}
-        >
-          +
-        </button>
-        <p className={"flex mr-1 -ml-3 items-center"}>{speed}</p>
-        <button
-          className={buttonStyles}
-          onClick={() => {
-            setSpeed(speed - SPEED_INCREMENT);
-          }}
-        >
-          -
-        </button>
-        <button
-          className={buttonStyles}
-          onClick={() => {
-            setGameMode(gameMode === "pick-start" ? "regular" : "pick-start");
-          }}
-        >
-          Pick Start
-        </button>
-        <button
-          className={buttonStyles}
-          onClick={() => {
-            setHideData(!hideData);
-          }}
-        >
-          {hideData ? "Show " : "Hide "} Data
-        </button>
-        <button
-          className={buttonStyles}
-          onClick={() => {
-            setPathMode(pathMode === "static" ? "dynamic" : "static");
-          }}
-        >
-          {pathMode === "static" ? "Hide" : "Show"} Path
-        </button>
-      </div>
+      <ButtonPanel
+        tick={tick}
+        speed={speed}
+        hideData={hideData}
+        timeMode={timeMode}
+        gameMode={gameMode}
+        pathMode={pathMode}
+        setTick={setTick}
+        setSpeed={setSpeed}
+        setHideData={setHideData}
+        setTimeMode={setTimeMode}
+        setGameMode={setGameMode}
+        setPathMode={setPathMode}
+      />
 
       {/* Grid */}
-      {grid.map((row, i) => (
-        <div
-          key={i}
-          className={`flex bg-gray-400 ${
-            gameMode === "pick-start" ? "opacity-50" : ""
-          }`}
-        >
-          {row.map((col, j) => (
-            <button
-              key={j}
-              title={`col: ${j}, row: ${i}`}
-              className={`flex  text-3xl items-center justify-center w-8 h-8 border border-gray-500 hover:bg-gray-500 hover:text-slate-200 hover:opacity-10 ${
-                getStyles(j, i) || ""
-              }
-              `}
-              onClick={() => {
-                const newGrid = [...grid];
-                const newVal =
-                  gameMode === "pick-start"
-                    ? "A"
-                    : newGrid[i][j] === "#"
-                    ? " "
-                    : "#";
-                newGrid[i][j] = newVal;
-
-                if (newVal === "#") {
-                  const newWalls = new Set([...walls, `${j},${i}`]);
-                  localStorage.setItem("walls", JSON.stringify([...newWalls]));
-                  setWalls(new Set(newWalls));
-                } else {
-                  const newWalls = new Set([...walls]);
-                  newWalls.delete(`${j},${i}`);
-                  localStorage.setItem("walls", JSON.stringify([...newWalls]));
-                  setWalls(new Set(newWalls));
-                }
-
-                if (newVal === "A") {
-                  localStorage.setItem("start", `${j},${i}`);
-                  setStart(`${j},${i}`);
-                  setGameMode("regular");
-                  const oldStart = gridToLocation(gridInit)
-                    .flat()
-                    .find((l) => l.value === "A" && l.id !== `${j},${i}`);
-                  newGrid[oldStart?.row as number][oldStart?.col as number] =
-                    " ";
-                }
-
-                setGrid(newGrid);
-              }}
-            >
-              {col}
-            </button>
-          ))}
-        </div>
-      ))}
+      <Grid
+        grid={grid}
+        gameMode={gameMode}
+        getStyles={getStyles}
+        walls={walls}
+        setWalls={setWalls}
+        setStart={setStart}
+        setGameMode={setGameMode}
+        setGrid={setGrid}
+      />
 
       {/* Data Columns */}
       {!hideData && (
-        <div className="flex *:mr-12">
-          <div className="w-20">
-            <h2 className="text-2xl">CameFrom</h2>
-            <p className="bg-orange-400">
-              {JSON.stringify(cameFrom, null, 2)
-                .slice(0, -1)
-                .slice(1)
-                .replace(/["]/g, "")
-                .replace(/",/g, "\n")}
-            </p>
-          </div>
-          <div className="w-20">
-            <h2 className="text-2xl">Frontier</h2>
-            {frontier.map((front, i) => {
-              return (
-                <p key={i} className="bg-blue-400">
-                  {front}
-                </p>
-              );
-            })}
-          </div>
-          <div className="w-20">
-            <h2 className="text-2xl">Neighbors</h2>
-            {neighbors.map((neighbor, i) => {
-              return (
-                <p key={i} className="bg-green-400">
-                  {neighbor.id}
-                </p>
-              );
-            })}
-          </div>
-          <div className="w-20">
-            <h2 className="text-2xl">Current</h2>
-            <p className="bg-red-200">{currentTile}</p>
-          </div>
-        </div>
+        <DataPanel
+          cameFrom={cameFrom}
+          frontier={frontier}
+          neighbors={neighbors}
+          currentTile={currentTile}
+        />
       )}
     </div>
   );
 }
 
 export default App;
-
-export interface Location<T> {
-  id: string;
-  value: T;
-  col: number;
-  row: number;
-  cost?: number;
-}
-export interface Graph<T> {
-  nodes: Record<string, Location<T>>;
-  edges?: (pointID: string) => Record<string, Location<T>>;
-  neighbors: (id: string, ignoreWalls?: boolean) => Record<string, Location<T>>; // id is a string of the form "col,row"
-}
-export interface SquareGrid<T> extends Graph<T> {
-  width: number;
-  height: number;
-  walls: Set<string>;
-  inBounds: (point: Location<T>) => boolean;
-  isValid: (point: Location<T>) => boolean;
-}
-export interface WeightedGrid<T> extends SquareGrid<T> {
-  weights: Record<string, number>;
-}
