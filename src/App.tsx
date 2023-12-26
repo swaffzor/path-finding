@@ -18,6 +18,7 @@ function App() {
   ];
   const startInit = "0,0";
   const [grid, setGrid] = useState(gridInit);
+
   const [cameFrom, setCameFrom] = useState<Record<string, string>>({});
   // const [costSoFar, setCostSoFar] = useState<number[]>([0]);
   const endAddress = grid
@@ -32,85 +33,31 @@ function App() {
   const [start, setStart] = useState<string>(startInit);
   const [frontier, setFrontier] = useState<string[]>([start]);
   const [currentTile, setCurrentTile] = useState<string>("");
-  const [hasFoundGoal, setHasFoundGoal] = useState<boolean>(false);
   const [neighbors, setNeighbors] = useState<Location<string>[]>([]);
 
   const [tick, setTick] = useState<number>(0);
   const [mode, setMode] = useState<string>("");
   const [timeMode, setTimeMode] = useState<string>("play");
   const [speed, setSpeed] = useState<number>(500);
+  const [hasFoundGoal, setHasFoundGoal] = useState<boolean>(false);
+  const [walls, setWalls] = useState<Set<string>>(new Set());
 
-  //   const dijkstra = <T= string>(
-  //     graph: WeightedGrid<T>,
-  //     start: string = '0,0',
-  //     goal?: string
-  //   ): [Record<string, string>, Record<string, number>] => {
-  //     const djFrontier = new Set<string>()
-  //     const dfCameFrom = {} as Record<string, string>
-  //     const dfCostSoFar = {} as Record<string, number>
-  //     // just started, no previous point
-  //     djFrontier.add(start)
-  //     dfCameFrom[start] = ''
-  //     dfCostSoFar[start] = 0
-
-  //     while (djFrontier.size > 0) {
-  //       const current = djFrontier.values().next().value as string
-
-  //       if (current === goal) {
-  //         break
-  //       }
-
-  //       const neighbors = Object.values(graph.neighbors(current)) //.map((n) => n.id)
-  //       const fromLocation = graph.nodes[current]
-  //       for (const next of neighbors) {
-  //         const toLocation = neighbors.find((n) => n === next) as Location<string>
-  //         const newCost =
-  //           dfCostSoFar[current] +
-  //           graph.cost(fromLocation, toLocation)
-  //         if (!(next.id in dfCostSoFar) || newCost < dfCostSoFar[next.id]) {
-  //           dfCostSoFar[next.id] = newCost
-  //           djFrontier.add(next.id)
-  //           dfCameFrom[next.id] = current
-  //         }
-  //       }
-
-  //       djFrontier.delete(current)
-  //     }
-
-  //     return [dfCameFrom, dfCostSoFar]
-  //   }
-
-  //   const isInBounds = (point: Location<string>, width: number, height: number) =>
-  //   point.col >= 0 && point.col < width && point.row >= 0 && point.row < height
-
-  // const islocationValid = (location: {row: string, col: string}, walls: Set<string>) =>
-  //   !walls.has(`${location.col},${location.row}`)
-
-  //   const getNeighbors = (
-  //     point: string,
-  //     nodes: string[][],
-  //     inBounds: (point: Pick<Location<string>, "col" | "row">) => boolean,
-  //     isValid: (pointID: string) => boolean,
-  //     ignoreWalls?: boolean
-  //   ) => {
-  //     const tempNeighbors: Record<string, Location<string>> = {...neighbors}
-  //     const [col, row] = point.split(',').map((n) => Number(n))
-  //     const cardinalNeighbors = [
-  //       { col: col - 1, row: row },
-  //       { col: col + 1, row: row },
-  //       { col: col, row: row - 1 },
-  //       { col: col, row: row + 1 },
-  //     ]
-  //     const results = cardinalNeighbors
-  //       .filter(inBounds)
-  //       .map((p) => nodes[p.col][p.row])
-  //     const filtered = results.filter(isValid)
-  //     const dfNeighbors = ignoreWalls ? results : filtered
-  //     dfNeighbors.forEach((p) => {
-  //       tempNeighbors[p] =
-  //     })
-  //     return tempNeighbors
-  //   }
+  const gridToLocation = (inGrid: string[][]) => {
+    const localGrid: Location<string>[][] = [];
+    for (let row = 0; row < inGrid.length; row++) {
+      const tempRow: Location<string>[] = [];
+      for (let col = 0; col < inGrid[row].length; col++) {
+        tempRow.push({
+          col,
+          row,
+          value: inGrid[row][col],
+          id: `${col},${row}`,
+        });
+      }
+      localGrid.push(tempRow);
+    }
+    return localGrid;
+  };
 
   const getPointNeighbors = (
     point: Location<string>,
@@ -204,6 +151,12 @@ function App() {
   };
 
   useEffect(() => {
+    const tempWalls = gridToLocation(gridInit).flat();
+    const filtered = tempWalls.filter((l) => l.value === "#").map((l) => l.id);
+    setWalls(new Set(filtered));
+  }, []);
+
+  useEffect(() => {
     const localFrontier = [...frontier];
     const localCameFrom = { ...cameFrom };
     let localNeighbors: Location<string>[] = [...neighbors];
@@ -231,7 +184,7 @@ function App() {
             value: current,
           },
           grid
-        ); //.filter((n) => localCameFrom.some((s) => `${s[0]}:${s[1]}` !== n.id));
+        ).filter((n) => !walls.has(n.id));
       }
       const next = localNeighbors.shift();
       setNeighbors(localNeighbors);
