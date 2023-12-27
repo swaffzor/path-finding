@@ -1,16 +1,12 @@
 import { createContext } from "react";
 
 interface ConfigContextType {
-  grid: string[][];
-  cameFrom: Record<string, string>;
   tick: number;
   speed: number;
   hideData: boolean;
   timeMode: string;
   gameMode: string;
   pathMode: string;
-  setGrid: (grid: string[][]) => void;
-  setCameFrom: (cameFrom: Record<string, string>) => void;
   setTick: (tick: number) => void;
   setSpeed: (speed: number) => void;
   setHideData: (hideData: boolean) => void;
@@ -20,16 +16,12 @@ interface ConfigContextType {
 }
 
 export const ConfigContext = createContext<ConfigContextType>({
-  grid: [],
-  cameFrom: {},
   tick: 0,
   speed: 100,
   hideData: false,
   timeMode: "",
   gameMode: "",
   pathMode: "",
-  setGrid: () => {},
-  setCameFrom: () => {},
   setTick: () => {},
   setSpeed: () => {},
   setHideData: () => {},
@@ -39,3 +31,29 @@ export const ConfigContext = createContext<ConfigContextType>({
 });
 
 export const ConfigProvider = ConfigContext.Provider;
+
+interface TileContextType {
+  grid: string[][];
+  walls: Set<string>;
+  cameFrom: Record<string, string>;
+  start: string;
+  setStart: (start: string) => void;
+  setGrid: (grid: string[][]) => void;
+  setCameFrom: (cameFrom: Record<string, string>) => void;
+  getStyles: (row: number, col: number) => string;
+  setWalls: (values: Set<string>) => void;
+}
+
+export const GameContext = createContext<TileContextType>({
+  grid: [],
+  cameFrom: {},
+  walls: new Set(),
+  start: "",
+  setStart: () => {},
+  setGrid: () => {},
+  setCameFrom: () => {},
+  getStyles: () => "",
+  setWalls: () => {},
+});
+
+export const GameProvider = GameContext.Provider;

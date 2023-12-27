@@ -5,7 +5,7 @@ import DataPanel from "./DataPanel";
 import Grid from "./Grid";
 import ButtonPanel from "./ButtonPanel";
 import { gridInit } from "./constants";
-import { ConfigProvider } from "./Context";
+import { ConfigProvider, GameProvider } from "./Context";
 
 function App() {
   const startInit = "0,0";
@@ -197,10 +197,6 @@ function App() {
   return (
     <ConfigProvider
       value={{
-        grid,
-        setGrid,
-        cameFrom,
-        setCameFrom,
         gameMode,
         setGameMode,
         hideData,
@@ -215,33 +211,47 @@ function App() {
         setSpeed,
       }}
     >
-      <div className={`p-4 m-8 text-blue-600`}>
-        {/* Buttons */}
-        {hasFoundGoal && <p>Found Goal</p>}
-        <ButtonPanel />
+      <GameProvider
+        value={{
+          grid,
+          setGrid,
+          cameFrom,
+          setCameFrom,
+          walls,
+          setWalls,
+          start,
+          setStart,
+          getStyles,
+        }}
+      >
+        <div className={`p-4 m-8 text-blue-600`}>
+          {/* Buttons */}
+          {hasFoundGoal && <p>Found Goal</p>}
+          <ButtonPanel />
 
-        {/* Grid */}
-        <Grid
-          grid={grid}
-          gameMode={gameMode}
-          getStyles={getStyles}
-          walls={walls}
-          setWalls={setWalls}
-          setStart={setStart}
-          setGameMode={setGameMode}
-          setGrid={setGrid}
-        />
-
-        {/* Data Columns */}
-        {!hideData && (
-          <DataPanel
-            cameFrom={cameFrom}
-            frontier={frontier}
-            neighbors={neighbors}
-            currentTile={currentTile}
+          {/* Grid */}
+          <Grid
+            grid={grid}
+            gameMode={gameMode}
+            getStyles={getStyles}
+            walls={walls}
+            setWalls={setWalls}
+            setStart={setStart}
+            setGameMode={setGameMode}
+            setGrid={setGrid}
           />
-        )}
-      </div>
+
+          {/* Data Columns */}
+          {!hideData && (
+            <DataPanel
+              cameFrom={cameFrom}
+              frontier={frontier}
+              neighbors={neighbors}
+              currentTile={currentTile}
+            />
+          )}
+        </div>
+      </GameProvider>
     </ConfigProvider>
   );
 }
