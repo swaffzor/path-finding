@@ -1,100 +1,73 @@
-interface Props {
-  tick: number;
-  speed: number;
-  hideData: boolean;
-  timeMode: string;
-  gameMode: string;
-  pathMode: string;
-  setTick: (tick: number) => void;
-  setSpeed: (speed: number) => void;
-  setHideData: (hideData: boolean) => void;
-  setTimeMode: (timeMode: string) => void;
-  setGameMode: (gameMode: string) => void;
-  setPathMode: (pathMode: string) => void;
-}
+import { useContext } from "react";
+import Button from "./Button";
+import { SPEED_INCREMENT } from "./constants";
+import { ConfigContext } from "./Context";
 
-const ButtonPanel = ({
-  timeMode,
-  setTimeMode,
-  setTick,
-  tick,
-  setSpeed,
-  speed,
-  gameMode,
-  setGameMode,
-  setHideData,
-  setPathMode,
-  pathMode,
-  hideData,
-}: Props) => {
-  const SPEED_INCREMENT = 50;
-
-  const buttonStyles =
-    "flex items-center justify-center mr-4 my-2 p-2 bg-gray-400 border border-gray-500 rounded-md hover:bg-gray-500 hover:text-slate-200";
+const ButtonPanel = () => {
+  const {
+    timeMode,
+    setTimeMode,
+    setTick,
+    tick,
+    speed,
+    setSpeed,
+    gameMode,
+    setGameMode,
+    hideData,
+    setHideData,
+    pathMode,
+    setPathMode,
+  } = useContext(ConfigContext);
 
   return (
     <div className="flex">
-      <button
-        className={buttonStyles}
+      <Button
+        title={timeMode === "play" ? "pause" : "play"}
         onClick={() => {
           const temp = timeMode === "play" ? "pause" : "play";
           setTimeMode(temp);
           localStorage.setItem("timeMode", temp);
           setTick(tick + 1);
         }}
-      >
-        {timeMode === "play" ? "pause" : "play"}
-      </button>
-      <button
-        className={buttonStyles.concat(" w-12")}
+      />
+      <Button
+        title={tick.toString()}
+        extraStyles="w-12"
         onClick={() => {
           setTick(tick + 1);
         }}
-      >
-        {tick}
-      </button>
-
-      <button
-        className={buttonStyles}
+      />
+      <Button
+        title="+"
         onClick={() => {
           setSpeed(speed + SPEED_INCREMENT);
         }}
-      >
-        +
-      </button>
+      />
       <p className={"flex mr-1 -ml-3 items-center"}>{speed}</p>
-      <button
-        className={buttonStyles}
+      <Button
+        title="-"
         onClick={() => {
           setSpeed(speed - SPEED_INCREMENT);
         }}
-      >
-        -
-      </button>
-      <button
-        className={buttonStyles}
+      />
+      <Button
+        title="Pick Start"
         onClick={() => {
           setGameMode(gameMode === "pick-start" ? "regular" : "pick-start");
         }}
-      >
-        Pick Start
-      </button>
-      <button
-        className={buttonStyles}
+      />
+      <Button
+        title={`${hideData ? "Show" : "Hide"} Data`}
         onClick={() => {
           setHideData(!hideData);
         }}
-      >
-        {hideData ? "Show " : "Hide "} Data
-      </button>
-      <button
-        className={buttonStyles}
+      />
+      <Button
+        title={`${pathMode === "static" ? "Hide" : "Show"} Path`}
         onClick={() => {
           setPathMode(pathMode === "static" ? "dynamic" : "static");
         }}
-      >
-        {pathMode === "static" ? "Hide" : "Show"} Path
-      </button>
+      />
     </div>
   );
 };
