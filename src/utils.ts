@@ -166,7 +166,7 @@ export const reconstructPath = (
 
     if (current === undefined) {
       console.error("No path found");
-      break;
+      return [];
     }
     if (path.includes(current)) {
       console.error("Path is not unique");
