@@ -41,8 +41,8 @@ const GridTile = ({ col, row, value, isGhost, isPlayer, onClick }: Props) => {
         className={`flex text-sm items-center justify-center w-8 h-8 border border-gray-500 hover:bg-gray-500 hover:text-slate-200 hover:opacity-10 ${
           getStyles(col, row) || ""
         }
-          ${isPlayer ? " border bg-purple-600" : ""} ${
-          isGhost ? "opacity-50 border bg-green-600" : ""
+          ${isPlayer ? " bg-purple-600 text-white" : ""} ${
+          isGhost ? " opacity-50 bg-green-600" : ""
         }
             `}
         onClick={() => {

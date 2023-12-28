@@ -13,6 +13,9 @@ const Grid = () => {
   const isPressLeft = useKeyPress("ArrowLeft");
   const isPressRight = useKeyPress("ArrowRight");
   const [player, setPlayer] = useState({ col: 0, row: 0 });
+  const [playerDirection, setPlayerDirection] = useState<"<" | "^" | ">" | "v">(
+    "v"
+  );
   const [ghost, setGhost] = useState({ col: 0, row: 0 });
   const [ghostPath, setGhostPath] = useState<string[]>([]);
   const [tick, setTick] = useState<number>(0);
@@ -43,6 +46,17 @@ const Grid = () => {
     if (isPressRight && isInBounds(player.col + 1, player.row)) {
       setPlayer((prev) => ({ ...prev, col: prev.col + 1 }));
     }
+    setPlayerDirection(
+      isPressUp
+        ? "^"
+        : isPressDown
+        ? "v"
+        : isPressLeft
+        ? "<"
+        : isPressRight
+        ? ">"
+        : playerDirection
+    );
     // const [col, row] = localGhostPath.shift()?.split(",").map(Number) || [0, 0];
     // setGhost({ col, row } || "");
     // setTick((prev) => prev + 1);
@@ -104,7 +118,11 @@ const Grid = () => {
                 key={j}
                 col={isControlled ? player.col : j}
                 row={isControlled ? player.row : i}
-                value={value}
+                value={
+                  isControlled && player.col === j && player.row === i
+                    ? playerDirection
+                    : value
+                }
                 isPlayer={isControlled && player.col === j && player.row === i}
                 isGhost={isControlled && ghost.col === j && ghost.row === i}
                 // onClick={() => {
