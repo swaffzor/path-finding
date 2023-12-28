@@ -100,6 +100,22 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const localGrid = grid.map((row, i) =>
+      row.map((col, j) => {
+        const id = `${j},${i}`;
+        return start && id === start
+          ? "A"
+          : walls.has(id)
+          ? "#"
+          : col === "#"
+          ? " "
+          : col;
+      })
+    );
+    setGrid(localGrid);
+  }, [walls]);
+
+  useEffect(() => {
     if (isEscPressed && timeMode === "animate") {
       setTimeMode("pause");
     } else if (isEscPressed && timeMode === "pause") {
@@ -185,31 +201,47 @@ function App() {
   }, [tick]);
 
   const getStyles = (col: number, row: number) => {
-    const styles: string[] = [];
+    const styles: string[] = [
+      "flex items-center justify-center w-8 h-8 border border-gray-500 hover:bg-gray-500 hover:text-slate-200 hover:opacity-10",
+    ];
 
-    currentTile === `${col},${row}`
-      ? styles.push("border-2 border-red-400")
-      : "";
-    start === `${col},${row}` || grid[row][col] === "X"
-      ? styles.push("text-red-600")
-      : "";
-    frontier.includes(`${col},${row}`)
-      ? styles.push("bg-blue-400")
-      : Object.keys(cameFrom).some((cf) => cf.split(":")[0] === `${col},${row}`)
-      ? styles.push("bg-blue-500")
-      : walls.has(`${col},${row}`)
-      ? styles.push("text-slate-700 bg-slate-500")
-      : "";
+    if (currentTile === `${col},${row}` && !isControlled) {
+      styles.push("border-2 border-red-400");
+    }
 
-    neighbors.map((n) => n.id).includes(`${col},${row}`)
-      ? styles.push("border-4 border-green-600")
-      : "";
+    if (
+      (start === `${col},${row}` || grid[row][col] === "X") &&
+      !isControlled
+    ) {
+      styles.push("text-red-600");
+    }
 
-    styles.push(
-      gameMode === "pick-start"
-        ? "hover:opacity-75 opacity-50 shadow-inner hover:bg-green-600"
-        : ""
-    );
+    if (frontier.includes(`${col},${row}`)) {
+      styles.push("bg-blue-400");
+    }
+
+    if (
+      Object.keys(cameFrom).some(
+        (cf) => cf.split(":")[0] === `${col},${row}`
+      ) &&
+      !isControlled
+    ) {
+      styles.push("bg-blue-500");
+    }
+
+    if (Object.values(walls).includes(`${col},${row}`)) {
+      styles.push("text-slate-700 bg-slate-500");
+    }
+
+    if (neighbors.map((n) => n.id).includes(`${col},${row}`)) {
+      styles.push("border-4 border-green-600");
+    }
+
+    if (gameMode === "pick-start" && start === `${col},${row}`) {
+      styles.push(
+        "hover:opacity-75 opacity-50 shadow-inner hover:bg-green-600"
+      );
+    }
 
     return styles.join(" ").trim();
   };
