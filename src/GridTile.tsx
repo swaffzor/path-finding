@@ -1,5 +1,5 @@
-import { useContext, useState } from "react";
-import Draggable from "react-draggable";
+import { useContext } from "react";
+// import Draggable from "react-draggable";
 import { gridInit } from "./constants";
 import { gridToLocation } from "./utils";
 import { ConfigContext, GameContext } from "./Context";
@@ -9,40 +9,31 @@ interface Props {
   row: number;
   value: string;
   isGhost: boolean;
-  onClick?: () => void;
+  winner?: string;
   isPlayer?: boolean;
+  onClick?: () => void;
 }
 
-const GridTile = ({ col, row, value, isGhost, isPlayer, onClick }: Props) => {
-  const [deltaPosition, setDeltaPosition] = useState({ x: 0, y: 0 });
+const GridTile = ({
+  col,
+  row,
+  value,
+  isGhost,
+  winner,
+  isPlayer,
+  onClick,
+}: Props) => {
   const { gameMode, setGameMode } = useContext(ConfigContext);
   const { walls, grid, setWalls, setGrid, setStart, getStyles } =
     useContext(GameContext);
 
   return (
     <div>
-      {/* <Draggable
-        key={col}
-        grid={[13, 12]}
-        onStart={(_, data) => {
-          console.log("start", data);
-        }}
-        onStop={(_, data) => {
-          console.log("stop", data);
-        }}
-        onDrag={(_, data) => {
-          setDeltaPosition((prev) => {
-            return { x: prev.x + data.deltaX, y: prev.y + data.deltaY };
-          });
-        }}
-      > */}
       <button
         title={`col: ${col}, row: ${row}`}
-        className={`flex text-sm items-center justify-center w-8 h-8 border border-gray-500 hover:bg-gray-500 hover:text-slate-200 hover:opacity-10 ${
-          getStyles(col, row) || ""
-        }
-          ${isPlayer ? " bg-purple-600 text-white" : ""} ${
-          isGhost ? " opacity-50 bg-green-600" : ""
+        className={`${getStyles(col, row)}
+          ${isPlayer ? " bg-purple-600 text-orange-400 text-3xl" : ""} ${
+          isGhost ? " bg-green-600 text-4xl" : ""
         }
             `}
         onClick={() => {
@@ -78,9 +69,18 @@ const GridTile = ({ col, row, value, isGhost, isPlayer, onClick }: Props) => {
           onClick && onClick();
         }}
       >
-        {value}
+        {isPlayer
+          ? winner === "ghost"
+            ? "🪦"
+            : winner === "player"
+            ? "🏆"
+            : value
+          : isGhost
+          ? winner === "player"
+            ? "💀"
+            : "👻"
+          : value}
       </button>
-      {/* </Draggable> */}
     </div>
   );
 };

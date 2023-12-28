@@ -2,26 +2,41 @@ import { useContext, useEffect, useState } from "react";
 import GridTile from "./GridTile";
 import { ConfigContext, GameContext } from "./Context";
 import { useKeyPress } from "./Hooks";
-import parents from "./parents.json";
 import { breadthSearch, reconstructPath } from "./utils";
+
+interface Position {
+  col: number;
+  row: number;
+}
+
+enum Dir {
+  UP = "↑",
+  DOWN = "↓",
+  LEFT = "←",
+  RIGHT = "→",
+}
+type DirSprite = Dir.UP | Dir.DOWN | Dir.LEFT | Dir.RIGHT;
 
 const Grid = () => {
   const { isControlled, speed, pathMode } = useContext(ConfigContext);
-  const { grid, walls } = useContext(GameContext);
+  const { grid, walls, setWalls, setGrid, goal } = useContext(GameContext);
   const isPressUp = useKeyPress("ArrowUp");
   const isPressDown = useKeyPress("ArrowDown");
   const isPressLeft = useKeyPress("ArrowLeft");
   const isPressRight = useKeyPress("ArrowRight");
-  const [player, setPlayer] = useState({ col: 0, row: 0 });
-  const [playerDirection, setPlayerDirection] = useState<"<" | "^" | ">" | "v">(
-    "v"
-  );
-  const [ghost, setGhost] = useState({ col: 0, row: 0 });
+  const isPressSpace = useKeyPress(" ");
+  const [player, setPlayer] = useState<Position>({ col: 0, row: 0 });
+  const [playerDirection, setPlayerDirection] = useState<DirSprite>(Dir.RIGHT);
+  const [prevDirection, setPrevDirection] = useState<DirSprite>(Dir.RIGHT);
+  const [ghost, setGhost] = useState<Position>({
+    col: Number(goal.split(",")[0]) || 0,
+    row: Number(goal.split(",")[1]) || 0,
+  });
   const [ghostPath, setGhostPath] = useState<string[]>([]);
   const [tick, setTick] = useState<number>(0);
 
-  const pathParents = parents as Record<string, string>;
   const isCaught = JSON.stringify(ghost) === JSON.stringify(player);
+  const ghostLost = ghostPath.length === 0;
 
   const isInBounds = (col: number, row: number) => {
     return (
@@ -31,6 +46,27 @@ const Grid = () => {
       row < grid.length &&
       grid[row][col] !== "#"
     );
+  };
+
+  const updateGrid = (newWalls: Set<string>) => {
+    const localGrid = grid.map((row, i) =>
+      row.map((col, j) => {
+        const id = `${j},${i}`;
+        return (newWalls ?? walls).has(id) ? "#" : col === "#" ? " " : col;
+      })
+    );
+    setGrid(localGrid);
+    reRoute(localGrid, newWalls);
+  };
+
+  const reRoute = (newGrid?: string[][], newWalls?: Set<string>) => {
+    const ghostID = `${ghost.col},${ghost.row}`;
+    const playerID = `${player.col},${player.row}`;
+    const useWalls = pathMode === "walls" ? newWalls ?? walls : undefined;
+    const results = breadthSearch(newGrid ?? grid, ghostID, playerID, useWalls);
+    const localGhostPath = reconstructPath(ghostID, playerID, results);
+    setGhostPath(localGhostPath);
+    setTick(tick + 1);
   };
 
   useEffect(() => {
@@ -46,25 +82,53 @@ const Grid = () => {
     if (isPressRight && isInBounds(player.col + 1, player.row)) {
       setPlayer((prev) => ({ ...prev, col: prev.col + 1 }));
     }
+
     setPlayerDirection(
       isPressUp
-        ? "^"
+        ? Dir.UP
         : isPressDown
-        ? "v"
+        ? Dir.DOWN
         : isPressLeft
-        ? "<"
+        ? Dir.LEFT
         : isPressRight
-        ? ">"
+        ? Dir.RIGHT
         : playerDirection
     );
-    // const [col, row] = localGhostPath.shift()?.split(",").map(Number) || [0, 0];
-    // setGhost({ col, row } || "");
-    // setTick((prev) => prev + 1);
-    // if (isPressDown) console.log("down");
-    // if (isPressUp) console.log("up");
-    // if (isPressLeft) console.log("left");
-    // if (isPressRight) console.log("right");
   }, [isPressDown, isPressUp, isPressLeft, isPressRight]);
+
+  // break/build walls
+  useEffect(() => {
+    if (isPressSpace) {
+      let { col, row } = player;
+      const localWalls = new Set([...walls]);
+      switch (playerDirection) {
+        case Dir.LEFT:
+          col = player.col - 1;
+          break;
+        case Dir.UP:
+          row = player.row - 1;
+          break;
+        case Dir.RIGHT:
+          col = player.col + 1;
+          break;
+        case Dir.DOWN:
+          row = player.row + 1;
+          break;
+        default:
+          break;
+      }
+      if (localWalls.has(`${col},${row}`)) {
+        localWalls.delete(`${col},${row}`);
+      } else {
+        localWalls.add(`${col},${row}`);
+      }
+      setWalls(localWalls);
+      updateGrid(localWalls);
+    }
+
+    setPrevDirection(playerDirection);
+    setPlayerDirection(isPressSpace ? ("🔨" as DirSprite) : prevDirection);
+  }, [isPressSpace]);
 
   // move ghost
   useEffect(() => {
@@ -72,25 +136,22 @@ const Grid = () => {
       const localGhostPath = [...ghostPath];
       const localGhost = localGhostPath.shift() || "";
       const [col, row] = localGhost!.split(",").map(Number);
-      setGhost({ col, row });
-      localGhostPath.length > 0 && setGhostPath(localGhostPath);
+      setGhost({ col: col || ghost.col, row: row || ghost.row });
+      if (localGhostPath.length > 0) {
+        setGhostPath(localGhostPath);
+      }
 
       const timeout = setTimeout(() => {
-        !isCaught && setTick((prev) => prev + 1);
+        !isCaught && localGhostPath.length > 0 && setTick((prev) => prev + 1);
       }, speed);
       return () => clearTimeout(timeout);
     }
-  }, [tick, isCaught]);
+  }, [tick, isCaught, walls]);
 
   // re-routes path when player moves
   useEffect(() => {
-    const ghostID = `${ghost.col},${ghost.row}`;
-    const playerID = `${player.col},${player.row}`;
-    const useWalls = pathMode === "walls" ? walls : undefined;
-    const search = breadthSearch(grid, ghostID, playerID, useWalls);
-    const localGhostPath = reconstructPath(ghostID, playerID, search);
-    setGhostPath(localGhostPath);
-    setTick(tick + 1);
+    reRoute();
+    // setTick(tick + 1);
   }, [player]);
 
   useEffect(() => {
@@ -113,23 +174,19 @@ const Grid = () => {
             {i}
           </div>
           {row.map((value, j) => (
-            <>
-              <GridTile
-                key={j}
-                col={isControlled ? player.col : j}
-                row={isControlled ? player.row : i}
-                value={
-                  isControlled && player.col === j && player.row === i
-                    ? playerDirection
-                    : value
-                }
-                isPlayer={isControlled && player.col === j && player.row === i}
-                isGhost={isControlled && ghost.col === j && ghost.row === i}
-                // onClick={() => {
-                //   setIsControlled((prev) => !prev);
-                // }}
-              />
-            </>
+            <GridTile
+              key={j}
+              col={isControlled ? player.col : j}
+              row={isControlled ? player.row : i}
+              isPlayer={isControlled && player.col === j && player.row === i}
+              isGhost={isControlled && ghost.col === j && ghost.row === i}
+              value={
+                isControlled && player.col === j && player.row === i
+                  ? playerDirection
+                  : value
+              }
+              winner={isCaught ? "ghost" : ghostLost ? "player" : undefined}
+            />
           ))}
         </div>
       ))}
