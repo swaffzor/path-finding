@@ -110,7 +110,8 @@ export const getPointNeighbors = (
 export const breadthSearch = (
   grid: string[][],
   start: string = "0,0",
-  goal?: string
+  goal?: string,
+  walls: Set<string> = new Set()
 ) => {
   const frontier = new Set<string>();
   frontier.add(start);
@@ -134,7 +135,7 @@ export const breadthSearch = (
           id: current,
         },
         grid
-      )
+      ).filter((n) => !walls.has(n.id) && !(n.id in cameFrom))
     );
 
     for (const next of neighbors) {
@@ -172,7 +173,6 @@ export const reconstructPath = (
       console.log(
         JSON.stringify({ current, start, goal, path, cameFrom }, null, 2)
       );
-      debugger;
       break;
     }
   }

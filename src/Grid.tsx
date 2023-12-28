@@ -6,8 +6,8 @@ import parents from "./parents.json";
 import { breadthSearch, reconstructPath } from "./utils";
 
 const Grid = () => {
-  const { isControlled } = useContext(ConfigContext);
-  const { grid } = useContext(GameContext);
+  const { isControlled, speed, pathMode } = useContext(ConfigContext);
+  const { grid, walls } = useContext(GameContext);
   const isPressUp = useKeyPress("ArrowUp");
   const isPressDown = useKeyPress("ArrowDown");
   const isPressLeft = useKeyPress("ArrowLeft");
@@ -63,19 +63,20 @@ const Grid = () => {
 
       const timeout = setTimeout(() => {
         !isCaught && setTick((prev) => prev + 1);
-      }, 100);
+      }, speed);
       return () => clearTimeout(timeout);
     }
-  }, [tick, isControlled, isCaught]);
+  }, [tick, isCaught]);
 
   // re-routes path when player moves
   useEffect(() => {
     const ghostID = `${ghost.col},${ghost.row}`;
     const playerID = `${player.col},${player.row}`;
-    const search = breadthSearch(grid, ghostID, playerID);
+    const useWalls = pathMode === "walls" ? walls : undefined;
+    const search = breadthSearch(grid, ghostID, playerID, useWalls);
     const localGhostPath = reconstructPath(ghostID, playerID, search);
     setGhostPath(localGhostPath);
-    // setTick(tick + 1);
+    setTick(tick + 1);
   }, [player]);
 
   useEffect(() => {
@@ -104,10 +105,8 @@ const Grid = () => {
                 col={isControlled ? player.col : j}
                 row={isControlled ? player.row : i}
                 value={value}
-                isControlled={
-                  isControlled && player.col === j && player.row === i
-                }
-                isGhost={ghost.col === j && ghost.row === i}
+                isPlayer={isControlled && player.col === j && player.row === i}
+                isGhost={isControlled && ghost.col === j && ghost.row === i}
                 // onClick={() => {
                 //   setIsControlled((prev) => !prev);
                 // }}
@@ -116,7 +115,7 @@ const Grid = () => {
           ))}
         </div>
       ))}
-      {isCaught && (
+      {isControlled && isCaught && (
         <div className="flex items-center justify-center text-4xl">
           <p className="text-red-500">Tag, You're It!</p>
         </div>

@@ -10,17 +10,10 @@ interface Props {
   value: string;
   isGhost: boolean;
   onClick?: () => void;
-  isControlled?: boolean;
+  isPlayer?: boolean;
 }
 
-const GridTile = ({
-  col,
-  row,
-  value,
-  isGhost,
-  isControlled,
-  onClick,
-}: Props) => {
+const GridTile = ({ col, row, value, isGhost, isPlayer, onClick }: Props) => {
   const [deltaPosition, setDeltaPosition] = useState({ x: 0, y: 0 });
   const { gameMode, setGameMode } = useContext(ConfigContext);
   const { walls, grid, setWalls, setGrid, setStart, getStyles } =
@@ -48,7 +41,7 @@ const GridTile = ({
         className={`flex text-sm items-center justify-center w-8 h-8 border border-gray-500 hover:bg-gray-500 hover:text-slate-200 hover:opacity-10 ${
           getStyles(col, row) || ""
         }
-          ${isControlled ? "opacity-50 border bg-purple-600" : ""} ${
+          ${isPlayer ? " border bg-purple-600" : ""} ${
           isGhost ? "opacity-50 border bg-green-600" : ""
         }
             `}

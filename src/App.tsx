@@ -30,7 +30,7 @@ function App() {
   const [neighbors, setNeighbors] = useState<Location<string>[]>([]);
   const [walls, setWalls] = useState<Set<string>>(new Set());
   const [path, setPath] = useState<string[]>([]);
-  const [pathMode, setPathMode] = useState<string>("static");
+  const [pathMode, setPathMode] = useState<string>("walls");
 
   const [tick, setTick] = useState<number>(0);
   const [gameMode, setGameMode] = useState<string>("regular");
@@ -160,11 +160,13 @@ function App() {
           .map((n) => Number(n));
         const localGrid = [...grid];
         localGrid[temp[1]][temp[0]] = "X";
-        const [tempCol, tempRow] = lastPosition
-          .split(",")
-          .map((n) => Number(n));
-        if (pathMode === "dynamic") localGrid[tempRow][tempCol] = " ";
-        pathMode === "dynamic" && setLastPosition(`${temp[0]},${temp[1]}`);
+        if (pathMode === "dynamic") {
+          const [tempCol, tempRow] = lastPosition
+            .split(",")
+            .map((n) => Number(n));
+          localGrid[tempRow][tempCol] = " ";
+          setLastPosition(`${temp[0]},${temp[1]}`);
+        }
         setGrid(localGrid);
         if (localPath.length > 0) {
           setPath(localPath);
