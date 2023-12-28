@@ -6,6 +6,7 @@ import Grid from "./Grid";
 import ButtonPanel from "./ButtonPanel";
 import { gridInit } from "./constants";
 import { ConfigProvider, GameProvider } from "./Context";
+import { useKeyPress } from "./Hooks";
 
 function App() {
   const startInit = "0,0";
@@ -35,14 +36,20 @@ function App() {
   const [gameMode, setGameMode] = useState<string>("regular");
   const [searchMode, setSearchMode] = useState<string>("");
   const [timeMode, setTimeMode] = useState<string>(
-    localStorage.getItem("timeMode") || "play"
+    localStorage.getItem("timeMode") || "animate"
   );
   const [speed, setTheSpeed] = useState<number>(
     Number(localStorage.getItem("speed")) || 0
   );
   const [hasFoundGoal, setHasFoundGoal] = useState<boolean>(false);
-  const [hideData, setHideData] = useState<boolean>(false);
+  const [hideData, setHideData] = useState<boolean>(
+    !!localStorage.getItem("hideData") || false
+  );
   const [lastPosition, setLastPosition] = useState<string>("");
+  const [isControlled, setIsControlled] = useState<boolean>(
+    JSON.parse(localStorage.getItem("isControlled") || "false") || false
+  );
+  const isEscPressed = useKeyPress("Escape");
 
   const setSpeed = (speed: number) => {
     setTheSpeed(speed);
@@ -91,6 +98,17 @@ function App() {
 
     setTick(1);
   }, []);
+
+  useEffect(() => {
+    if (isEscPressed && timeMode === "animate") {
+      setTimeMode("pause");
+    } else if (isEscPressed && timeMode === "pause") {
+      setTimeMode("animate");
+      setTick(tick + 1);
+    }
+    console.log("isEscPressed", isEscPressed);
+    console.log("timeMode", timeMode);
+  }, [isEscPressed]);
 
   useEffect(() => {
     if (tick > 0) {
@@ -158,7 +176,7 @@ function App() {
       }
 
       const timeout = setTimeout(() => {
-        timeMode === "play" && setTick(tick + 1);
+        timeMode === "animate" && setTick(tick + 1);
       }, speed);
       return () => clearTimeout(timeout);
     }
@@ -209,6 +227,8 @@ function App() {
         setTick,
         speed,
         setSpeed,
+        isControlled,
+        setIsControlled,
       }}
     >
       <GameProvider
@@ -221,25 +241,16 @@ function App() {
           setWalls,
           start,
           setStart,
+          goal,
+          setGoal,
           getStyles,
         }}
       >
         <div className={`p-4 m-8 text-blue-600`}>
-          {/* Buttons */}
           {hasFoundGoal && <p>Found Goal</p>}
           <ButtonPanel />
 
-          {/* Grid */}
-          <Grid
-            grid={grid}
-            gameMode={gameMode}
-            getStyles={getStyles}
-            walls={walls}
-            setWalls={setWalls}
-            setStart={setStart}
-            setGameMode={setGameMode}
-            setGrid={setGrid}
-          />
+          <Grid />
 
           {/* Data Columns */}
           {!hideData && (

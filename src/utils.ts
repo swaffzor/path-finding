@@ -107,6 +107,49 @@ export const getPointNeighbors = (
   return gpnNeighbors;
 };
 
+export const breadthSearch = (
+  grid: string[][],
+  start: string = "0,0",
+  goal?: string
+) => {
+  const frontier = new Set<string>();
+  frontier.add(start);
+  const cameFrom = {} as Record<string, string>;
+  cameFrom[start] = ""; // just started, no previous point
+
+  while (frontier.size > 0) {
+    const current = frontier.values().next().value as string;
+
+    if (current === goal) {
+      break;
+    }
+
+    const [col, row] = current.split(",").map(Number);
+    const neighbors = Object.values(
+      getPointNeighbors(
+        {
+          col,
+          row,
+          value: current,
+          id: current,
+        },
+        grid
+      )
+    );
+
+    for (const next of neighbors) {
+      const id = `${next.col},${next.row}`;
+      if (!(id in cameFrom)) {
+        frontier.add(id);
+        cameFrom[id] = current;
+      }
+    }
+
+    frontier.delete(current);
+  }
+  return cameFrom;
+};
+
 export const reconstructPath = (
   start: string,
   goal: string,
@@ -119,6 +162,19 @@ export const reconstructPath = (
   while (current !== start && current !== undefined) {
     path.push(current);
     current = cameFrom[current];
+
+    if (current === undefined) {
+      console.error("No path found");
+      break;
+    }
+    if (path.includes(current)) {
+      console.error("Path is not unique");
+      console.log(
+        JSON.stringify({ current, start, goal, path, cameFrom }, null, 2)
+      );
+      debugger;
+      break;
+    }
   }
   path.push(start); // optional
   path.reverse(); // optional

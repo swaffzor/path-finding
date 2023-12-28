@@ -7,6 +7,8 @@ interface ConfigContextType {
   timeMode: string;
   gameMode: string;
   pathMode: string;
+  isControlled: boolean;
+  setIsControlled: (isControlled: boolean) => void;
   setTick: (tick: number) => void;
   setSpeed: (speed: number) => void;
   setHideData: (hideData: boolean) => void;
@@ -22,12 +24,14 @@ export const ConfigContext = createContext<ConfigContextType>({
   timeMode: "",
   gameMode: "",
   pathMode: "",
+  isControlled: false,
   setTick: () => {},
   setSpeed: () => {},
   setHideData: () => {},
   setTimeMode: () => {},
   setGameMode: () => {},
   setPathMode: () => {},
+  setIsControlled: () => {},
 });
 
 export const ConfigProvider = ConfigContext.Provider;
@@ -37,11 +41,13 @@ interface TileContextType {
   walls: Set<string>;
   cameFrom: Record<string, string>;
   start: string;
-  setStart: (start: string) => void;
-  setGrid: (grid: string[][]) => void;
-  setCameFrom: (cameFrom: Record<string, string>) => void;
+  goal: string;
   getStyles: (row: number, col: number) => string;
+  setGrid: (grid: string[][]) => void;
   setWalls: (values: Set<string>) => void;
+  setCameFrom: (cameFrom: Record<string, string>) => void;
+  setStart: (start: string) => void;
+  setGoal: (goal: string) => void;
 }
 
 export const GameContext = createContext<TileContextType>({
@@ -49,11 +55,13 @@ export const GameContext = createContext<TileContextType>({
   cameFrom: {},
   walls: new Set(),
   start: "",
-  setStart: () => {},
+  goal: "",
+  getStyles: () => "",
   setGrid: () => {},
   setCameFrom: () => {},
-  getStyles: () => "",
   setWalls: () => {},
+  setStart: () => {},
+  setGoal: () => {},
 });
 
 export const GameProvider = GameContext.Provider;

@@ -8,9 +8,19 @@ interface Props {
   col: number;
   row: number;
   value: string;
+  isGhost: boolean;
+  onClick?: () => void;
+  isControlled?: boolean;
 }
 
-const GridTile = ({ col, row, value }: Props) => {
+const GridTile = ({
+  col,
+  row,
+  value,
+  isGhost,
+  isControlled,
+  onClick,
+}: Props) => {
   const [deltaPosition, setDeltaPosition] = useState({ x: 0, y: 0 });
   const { gameMode, setGameMode } = useContext(ConfigContext);
   const { walls, grid, setWalls, setGrid, setStart, getStyles } =
@@ -18,58 +28,66 @@ const GridTile = ({ col, row, value }: Props) => {
 
   return (
     <div>
-      <Draggable
+      {/* <Draggable
         key={col}
         grid={[13, 12]}
+        onStart={(_, data) => {
+          console.log("start", data);
+        }}
+        onStop={(_, data) => {
+          console.log("stop", data);
+        }}
         onDrag={(_, data) => {
           setDeltaPosition((prev) => {
             return { x: prev.x + data.deltaX, y: prev.y + data.deltaY };
           });
         }}
-      >
-        <button
-          title={`col: ${col}, row: ${row}`}
-          className={`flex  text-sm items-center justify-center w-8 h-8 border border-gray-500 hover:bg-gray-500 hover:text-slate-200 hover:opacity-10 ${
-            getStyles(col, row) || ""
-          }
+      > */}
+      <button
+        title={`col: ${col}, row: ${row}`}
+        className={`flex text-sm items-center justify-center w-8 h-8 border border-gray-500 hover:bg-gray-500 hover:text-slate-200 hover:opacity-10 ${
+          getStyles(col, row) || ""
+        }
+          ${isControlled ? "opacity-50 border bg-purple-600" : ""} ${
+          isGhost ? "opacity-50 border bg-green-600" : ""
+        }
             `}
-          onClick={() => {
-            const newGrid = [...grid];
-            const newVal =
-              gameMode === "pick-start"
-                ? "A"
-                : newGrid[row][col] === "#"
-                ? " "
-                : "#";
-            newGrid[row][col] = newVal;
+        onClick={() => {
+          const newGrid = [...grid];
+          const newVal =
+            gameMode === "pick-start"
+              ? "A"
+              : newGrid[row][col] === "#"
+              ? " "
+              : "#";
+          newGrid[row][col] = newVal;
 
-            if (newVal === "#") {
-              const newWalls = new Set([...walls, `${col},${row}`]);
-              localStorage.setItem("walls", JSON.stringify([...newWalls]));
-              setWalls(new Set(newWalls));
-            } else {
-              const newWalls = new Set([...walls]);
-              newWalls.delete(`${col},${row}`);
-              localStorage.setItem("walls", JSON.stringify([...newWalls]));
-              setWalls(new Set(newWalls));
-            }
+          if (newVal === "#") {
+            const newWalls = new Set([...walls, `${col},${row}`]);
+            localStorage.setItem("walls", JSON.stringify([...newWalls]));
+            setWalls(new Set(newWalls));
+          } else if (newVal === "A") {
+            localStorage.setItem("start", `${col},${row}`);
+            setStart(`${col},${row}`);
+            setGameMode("regular");
+            const oldStart = gridToLocation(gridInit)
+              .flat()
+              .find((l) => l.value === "A" && l.id !== `${col},${row}`);
+            newGrid[oldStart?.row as number][oldStart?.col as number] = " ";
+          } else {
+            const newWalls = new Set([...walls]);
+            newWalls.delete(`${col},${row}`);
+            localStorage.setItem("walls", JSON.stringify([...newWalls]));
+            setWalls(new Set(newWalls));
+          }
 
-            if (newVal === "A") {
-              localStorage.setItem("start", `${col},${row}`);
-              setStart(`${col},${row}`);
-              setGameMode("regular");
-              const oldStart = gridToLocation(gridInit)
-                .flat()
-                .find((l) => l.value === "A" && l.id !== `${col},${row}`);
-              newGrid[oldStart?.row as number][oldStart?.col as number] = " ";
-            }
-
-            setGrid(newGrid);
-          }}
-        >
-          {value} {deltaPosition.x} {deltaPosition.y}
-        </button>
-      </Draggable>
+          setGrid(newGrid);
+          onClick && onClick();
+        }}
+      >
+        {value}
+      </button>
+      {/* </Draggable> */}
     </div>
   );
 };

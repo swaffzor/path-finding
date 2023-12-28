@@ -17,14 +17,16 @@ const ButtonPanel = () => {
     setHideData,
     pathMode,
     setPathMode,
+    isControlled,
+    setIsControlled,
   } = useContext(ConfigContext);
 
   return (
     <div className="flex">
       <Button
-        title={timeMode === "play" ? "pause" : "play"}
+        title={timeMode === "animate" ? "pause" : "Paused"}
         onClick={() => {
-          const temp = timeMode === "play" ? "pause" : "play";
+          const temp = timeMode === "animate" ? "pause" : "animate";
           setTimeMode(temp);
           localStorage.setItem("timeMode", temp);
           setTick(tick + 1);
@@ -51,14 +53,20 @@ const ButtonPanel = () => {
         }}
       />
       <Button
-        title="Pick Start"
+        title="Controlled"
+        extraStyles={`${
+          isControlled ? "border-4 border-blue-500 opacity-75" : ""
+        }`}
         onClick={() => {
-          setGameMode(gameMode === "pick-start" ? "regular" : "pick-start");
+          setGameMode(gameMode === "controlled" ? "regular" : "controlled");
+          localStorage.setItem("isControlled", (!isControlled).toString());
+          setIsControlled(!isControlled);
         }}
       />
       <Button
         title={`${hideData ? "Show" : "Hide"} Data`}
         onClick={() => {
+          localStorage.setItem("hideData", (!hideData).toString());
           setHideData(!hideData);
         }}
       />

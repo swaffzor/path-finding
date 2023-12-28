@@ -9,7 +9,7 @@ interface Props {
 const Button = ({ title, onClick, extraStyles }: Props) => {
   return (
     <button
-      className={buttonStyles.concat(extraStyles ?? "")}
+      className={`${buttonStyles} ${extraStyles ?? ""}`}
       onClick={onClick}
     >
       {title}
