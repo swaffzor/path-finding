@@ -64,25 +64,25 @@ const Grid = () => {
       setPlayer((prev) => ({ ...prev, row: prev.row + 1 }));
       setTimeout(() => {
         setCTick(cTick + 1);
-      }, 100);
+      }, 175);
     }
     if (isPressUp && isInBounds(player.col, player.row - 1)) {
       setPlayer((prev) => ({ ...prev, row: prev.row - 1 }));
       setTimeout(() => {
         setCTick(cTick + 1);
-      }, 100);
+      }, 175);
     }
     if (isPressLeft && isInBounds(player.col - 1, player.row)) {
       setPlayer((prev) => ({ ...prev, col: prev.col - 1 }));
       setTimeout(() => {
         setCTick(cTick + 1);
-      }, 100);
+      }, 175);
     }
     if (isPressRight && isInBounds(player.col + 1, player.row)) {
       setPlayer((prev) => ({ ...prev, col: prev.col + 1 }));
       setTimeout(() => {
         setCTick(cTick + 1);
-      }, 100);
+      }, 175);
     }
 
     setPlayerDirection(
