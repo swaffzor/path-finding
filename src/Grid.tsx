@@ -45,19 +45,8 @@ const Grid = () => {
       row >= 0 &&
       col < grid[0].length &&
       row < grid.length &&
-      grid[row][col] !== "#"
+      !walls.has(`${col},${row}`)
     );
-  };
-
-  const updateGrid = (newWalls: Set<string>) => {
-    const localGrid = grid.map((row, i) =>
-      row.map((col, j) => {
-        const id = `${j},${i}`;
-        return (newWalls ?? walls).has(id) ? "#" : col === "#" ? " " : col;
-      })
-    );
-    setGrid(localGrid);
-    reRoute(localGrid, newWalls);
   };
 
   const reRoute = (newGrid?: string[][], newWalls?: Set<string>) => {
@@ -136,7 +125,7 @@ const Grid = () => {
         localWalls.add(`${col},${row}`);
       }
       setWalls(localWalls);
-      updateGrid(localWalls);
+      reRoute(grid, localWalls);
     }
 
     setPrevDirection(playerDirection);
@@ -189,8 +178,8 @@ const Grid = () => {
           {row.map((value, j) => (
             <GridTile
               key={j}
-              col={isControlled ? player.col : j}
-              row={isControlled ? player.row : i}
+              col={isControlled && player.col === j ? player.col : j}
+              row={isControlled && player.row === i ? player.row : i}
               isPlayer={isControlled && player.col === j && player.row === i}
               isGhost={isControlled && ghost.col === j && ghost.row === i}
               value={

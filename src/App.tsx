@@ -61,19 +61,6 @@ function App() {
       setWalls(new Set());
       localStorage.setItem("walls", JSON.stringify([]));
       setGameMode("regular");
-
-      const localGrid = grid.map((row, i) =>
-        row.map((col, j) => {
-          const id = `${j},${i}`;
-          return {
-            col: j,
-            row: i,
-            value: start && id === start ? "A" : col === "#" ? " " : col,
-            id,
-          };
-        })
-      );
-      setGrid(localGrid.map((row) => row.map((col) => col.value)));
     }
   }, [pathMode]);
 
@@ -95,46 +82,9 @@ function App() {
     setCameFrom({ [localStart ?? startInit]: "" });
     setCurrentTile(localStart ?? startInit);
     setFrontier([localStart ?? startInit]);
-    if (localWalls) {
-      const localGrid = grid.map((row, i) =>
-        row.map((col, j) => {
-          const id = `${j},${i}`;
-          return {
-            col: j,
-            row: i,
-            value:
-              localStart && id === localStart
-                ? "A"
-                : localWalls.includes(id)
-                ? "#"
-                : col === "#"
-                ? " "
-                : col,
-            id,
-          };
-        })
-      );
-      setGrid(localGrid.map((row) => row.map((col) => col.value)));
-    }
 
     setTick(1);
   }, []);
-
-  useEffect(() => {
-    const localGrid = grid.map((row, i) =>
-      row.map((col, j) => {
-        const id = `${j},${i}`;
-        return start && id === start
-          ? "A"
-          : walls.has(id)
-          ? "#"
-          : col === "#"
-          ? " "
-          : col;
-      })
-    );
-    setGrid(localGrid);
-  }, [walls]);
 
   useEffect(() => {
     if (isEscPressed && timeMode === "animate") {
@@ -229,7 +179,6 @@ function App() {
     if (currentTile === `${col},${row}` && !isControlled) {
       styles.push("border-2 border-red-400");
     }
-
     if (
       (start === `${col},${row}` || grid[row][col] === "X") &&
       !isControlled
