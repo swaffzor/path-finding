@@ -1,7 +1,7 @@
 import { useContext } from "react";
 // import Draggable from "react-draggable";
-import { gridInit } from "./constants";
-import { gridToLocation } from "./utils";
+// import { gridInit } from "./constants";
+// import { gridToLocation } from "./utils";
 import { ConfigContext, GameContext } from "./Context";
 
 interface Props {
@@ -26,25 +26,45 @@ const GridTile = ({
   const { gameMode, setGameMode } = useContext(ConfigContext);
   const { walls, grid, setWalls, setGrid, setStart, getStyles } =
     useContext(GameContext);
+  const styles: string[] = [];
+  if (/^\d+$/.test(value)) {
+    switch (value) {
+      case "5":
+        styles.push("bg-green-600");
+        break;
+      case "4":
+        styles.push("bg-green-500");
+        break;
+      case "3":
+        styles.push("bg-green-400");
+        break;
+      case "2":
+        styles.push("bg-green-300");
+        break;
+      case "1":
+        styles.push("bg-green-200");
+        break;
 
+      default:
+        break;
+    }
+  }
   return (
     <div>
       <button
         title={`col: ${col}, row: ${row}`}
-        className={`${getStyles(col, row)}
+        className={`${styles.join(" ")} ${getStyles(col, row)}
           ${isPlayer ? " bg-purple-600 text-orange-400 text-3xl" : ""} ${
           isGhost ? " bg-green-600 text-4xl" : ""
         }
             `}
         onClick={() => {
-          const newGrid = [...grid];
           const newVal =
             gameMode === "pick-start"
               ? "A"
-              : newGrid[row][col] === "#"
+              : walls.has(`${col},${row}`)
               ? " "
               : "#";
-          newGrid[row][col] = newVal;
 
           if (newVal === "#") {
             const newWalls = new Set([...walls, `${col},${row}`]);
@@ -54,10 +74,6 @@ const GridTile = ({
             localStorage.setItem("start", `${col},${row}`);
             setStart(`${col},${row}`);
             setGameMode("regular");
-            const oldStart = gridToLocation(gridInit)
-              .flat()
-              .find((l) => l.value === "A" && l.id !== `${col},${row}`);
-            newGrid[oldStart?.row as number][oldStart?.col as number] = " ";
           } else {
             const newWalls = new Set([...walls]);
             newWalls.delete(`${col},${row}`);
@@ -65,11 +81,12 @@ const GridTile = ({
             setWalls(new Set(newWalls));
           }
 
-          setGrid(newGrid);
           onClick && onClick();
         }}
       >
-        {isPlayer
+        {walls.has(`${col},${row}`)
+          ? "#"
+          : isPlayer
           ? winner === "ghost"
             ? "🪦"
             : winner === "player"
@@ -79,6 +96,10 @@ const GridTile = ({
           ? winner === "player"
             ? "💀"
             : "👻"
+          : /^\d+$/.test(value) // is number
+          ? " "
+          : value === "1"
+          ? "?"
           : value}
       </button>
     </div>
