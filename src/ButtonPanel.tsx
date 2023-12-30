@@ -76,6 +76,12 @@ const ButtonPanel = () => {
           setPathMode(pathMode === "no-walls" ? "walls" : "no-walls");
         }}
       />
+      <Button
+        title={`Clear All Walls`}
+        onClick={() => {
+          setPathMode("clear-walls");
+        }}
+      />
     </div>
   );
 };

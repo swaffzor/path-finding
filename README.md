@@ -19,3 +19,9 @@
 - [ ] moveable goal node
 - [ ] draggable start/end
 - [ ] draggable walls
+
+## Game ideas
+
+- [] break a wall and the ghost can go through 1 wall
+- [] break a wall and the ghost speeds up
+- [] break a wall and the ghost can't go through walls for 1 second

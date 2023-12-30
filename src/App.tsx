@@ -57,6 +57,27 @@ function App() {
   };
 
   useEffect(() => {
+    if (pathMode === "clear-walls") {
+      setWalls(new Set());
+      localStorage.setItem("walls", JSON.stringify([]));
+      setGameMode("regular");
+
+      const localGrid = grid.map((row, i) =>
+        row.map((col, j) => {
+          const id = `${j},${i}`;
+          return {
+            col: j,
+            row: i,
+            value: start && id === start ? "A" : col === "#" ? " " : col,
+            id,
+          };
+        })
+      );
+      setGrid(localGrid.map((row) => row.map((col) => col.value)));
+    }
+  }, [pathMode]);
+
+  useEffect(() => {
     const localWallsMaybe = localStorage.getItem("walls");
     const localWalls = localWallsMaybe ? JSON.parse(localWallsMaybe) : null;
     const tempWalls = gridToLocation(gridInit).flat();
@@ -216,8 +237,11 @@ function App() {
       styles.push("text-red-600");
     }
 
-    if (frontier.includes(`${col},${row}`)) {
+    if (frontier.includes(`${col},${row}`) && !isControlled) {
       styles.push("bg-blue-400");
+    }
+    if (Object.values(walls).includes(`${col},${row}`)) {
+      styles.push("text-slate-700 bg-slate-500");
     }
 
     if (
@@ -227,10 +251,6 @@ function App() {
       !isControlled
     ) {
       styles.push("bg-blue-500");
-    }
-
-    if (Object.values(walls).includes(`${col},${row}`)) {
-      styles.push("text-slate-700 bg-slate-500");
     }
 
     if (neighbors.map((n) => n.id).includes(`${col},${row}`)) {

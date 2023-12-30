@@ -34,6 +34,7 @@ const Grid = () => {
   });
   const [ghostPath, setGhostPath] = useState<string[]>([]);
   const [tick, setTick] = useState<number>(0);
+  const [cTick, setCTick] = useState<number>(0);
 
   const isCaught = JSON.stringify(ghost) === JSON.stringify(player);
   const ghostLost = ghostPath.length === 0;
@@ -72,15 +73,27 @@ const Grid = () => {
   useEffect(() => {
     if (isPressDown && isInBounds(player.col, player.row + 1)) {
       setPlayer((prev) => ({ ...prev, row: prev.row + 1 }));
+      setTimeout(() => {
+        setCTick(cTick + 1);
+      }, 100);
     }
     if (isPressUp && isInBounds(player.col, player.row - 1)) {
       setPlayer((prev) => ({ ...prev, row: prev.row - 1 }));
+      setTimeout(() => {
+        setCTick(cTick + 1);
+      }, 100);
     }
     if (isPressLeft && isInBounds(player.col - 1, player.row)) {
       setPlayer((prev) => ({ ...prev, col: prev.col - 1 }));
+      setTimeout(() => {
+        setCTick(cTick + 1);
+      }, 100);
     }
     if (isPressRight && isInBounds(player.col + 1, player.row)) {
       setPlayer((prev) => ({ ...prev, col: prev.col + 1 }));
+      setTimeout(() => {
+        setCTick(cTick + 1);
+      }, 100);
     }
 
     setPlayerDirection(
@@ -94,7 +107,7 @@ const Grid = () => {
         ? Dir.RIGHT
         : playerDirection
     );
-  }, [isPressDown, isPressUp, isPressLeft, isPressRight]);
+  }, [isPressDown, isPressUp, isPressLeft, isPressRight, cTick]);
 
   // break/build walls
   useEffect(() => {
