@@ -25,3 +25,8 @@
 - [] break a wall and the ghost can go through 1 wall
 - [] break a wall and the ghost speeds up
 - [] break a wall and the ghost can't go through walls for 1 second
+
+## Look into canvas
+
+canvas is a 2d drawing api for javascript https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API
+window.requestAnimationFrame() // https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame
