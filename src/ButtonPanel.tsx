@@ -71,7 +71,7 @@ const ButtonPanel = () => {
         }}
       />
       <Button
-        title={`Wall Mode (${pathMode})`}
+        title={pathMode === "walls" ? "Easy" : "Hard"}
         onClick={() => {
           setPathMode(pathMode === "no-walls" ? "walls" : "no-walls");
         }}

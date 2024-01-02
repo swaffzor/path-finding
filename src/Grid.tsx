@@ -19,7 +19,7 @@ type DirSprite = Dir.UP | Dir.DOWN | Dir.LEFT | Dir.RIGHT;
 
 const Grid = () => {
   const { isControlled, speed, pathMode } = useContext(ConfigContext);
-  const { grid, walls, setWalls, setGrid, goal } = useContext(GameContext);
+  const { grid, walls, setWalls, goal } = useContext(GameContext);
   const isPressUp = useKeyPress("ArrowUp");
   const isPressDown = useKeyPress("ArrowDown");
   const isPressLeft = useKeyPress("ArrowLeft");
@@ -28,6 +28,7 @@ const Grid = () => {
   const [player, setPlayer] = useState<Position>({ col: 0, row: 0 });
   const [playerDirection, setPlayerDirection] = useState<DirSprite>(Dir.RIGHT);
   const [prevDirection, setPrevDirection] = useState<DirSprite>(Dir.RIGHT);
+  const [playerSpeed, setPlayerSpeed] = useState<number>(175);
   const [ghost, setGhost] = useState<Position>({
     col: Number(goal.split(",")[0]) || 0,
     row: Number(goal.split(",")[1]) || 0,
@@ -38,6 +39,12 @@ const Grid = () => {
 
   const isCaught = JSON.stringify(ghost) === JSON.stringify(player);
   const ghostLost = ghostPath.length === 0;
+  const grass = grid
+    .map((row, rowIndex) =>
+      row.map((value, colIndex) => [`${colIndex},${rowIndex}`, value])
+    )
+    .flat()
+    .filter((v) => v[1] !== "");
 
   const isInBounds = (col: number, row: number) => {
     return (
@@ -49,7 +56,7 @@ const Grid = () => {
     );
   };
 
-  const reRoute = (newGrid?: string[][], newWalls?: Set<string>) => {
+  const reRouteGhost = (newGrid?: string[][], newWalls?: Set<string>) => {
     const ghostID = `${ghost.col},${ghost.row}`;
     const playerID = `${player.col},${player.row}`;
     const useWalls = pathMode === "walls" ? newWalls ?? walls : undefined;
@@ -64,25 +71,25 @@ const Grid = () => {
       setPlayer((prev) => ({ ...prev, row: prev.row + 1 }));
       setTimeout(() => {
         setCTick(cTick + 1);
-      }, 175);
+      }, playerSpeed);
     }
     if (isPressUp && isInBounds(player.col, player.row - 1)) {
       setPlayer((prev) => ({ ...prev, row: prev.row - 1 }));
       setTimeout(() => {
         setCTick(cTick + 1);
-      }, 175);
+      }, playerSpeed);
     }
     if (isPressLeft && isInBounds(player.col - 1, player.row)) {
       setPlayer((prev) => ({ ...prev, col: prev.col - 1 }));
       setTimeout(() => {
         setCTick(cTick + 1);
-      }, 175);
+      }, playerSpeed);
     }
     if (isPressRight && isInBounds(player.col + 1, player.row)) {
       setPlayer((prev) => ({ ...prev, col: prev.col + 1 }));
       setTimeout(() => {
         setCTick(cTick + 1);
-      }, 175);
+      }, playerSpeed);
     }
 
     setPlayerDirection(
@@ -96,6 +103,7 @@ const Grid = () => {
         ? Dir.RIGHT
         : playerDirection
     );
+    reRouteGhost();
   }, [isPressDown, isPressUp, isPressLeft, isPressRight, cTick]);
 
   // break/build walls
@@ -125,7 +133,7 @@ const Grid = () => {
         localWalls.add(`${col},${row}`);
       }
       setWalls(localWalls);
-      reRoute(grid, localWalls);
+      reRouteGhost(grid, localWalls);
     }
 
     setPrevDirection(playerDirection);
@@ -143,22 +151,15 @@ const Grid = () => {
         setGhostPath(localGhostPath);
       }
 
+      const ghostInForest = grass.find((g) => g[0] === localGhost) || [];
+      const multiplier = 1;
+      //ghostInForest.length > 0 ? Number(ghostInForest[1]) : 1;
       const timeout = setTimeout(() => {
         !isCaught && localGhostPath.length > 0 && setTick((prev) => prev + 1);
-      }, speed);
+      }, speed * multiplier);
       return () => clearTimeout(timeout);
     }
   }, [tick, isCaught, walls]);
-
-  // re-routes path when player moves
-  useEffect(() => {
-    reRoute();
-    // setTick(tick + 1);
-  }, [player]);
-
-  useEffect(() => {
-    console.log("ghost", ghost);
-  }, [ghost]);
 
   return (
     <>
