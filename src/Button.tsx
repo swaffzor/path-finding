@@ -11,6 +11,7 @@ const Button = ({ title, onClick, extraStyles }: Props) => {
     <button
       className={`${buttonStyles} ${extraStyles ?? ""}`}
       onClick={onClick}
+      onFocus={(e) => e.target.blur()}
     >
       {title}
     </button>
