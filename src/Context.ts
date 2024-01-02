@@ -42,7 +42,7 @@ interface TileContextType {
   cameFrom: Record<string, string>;
   start: string;
   goal: string;
-  getStyles: (row: number, col: number) => string;
+  currentTile: string;
   setGrid: (grid: string[][]) => void;
   setWalls: (values: Set<string>) => void;
   setCameFrom: (cameFrom: Record<string, string>) => void;
@@ -56,7 +56,7 @@ export const GameContext = createContext<TileContextType>({
   walls: new Set(),
   start: "",
   goal: "",
-  getStyles: () => "",
+  currentTile: "",
   setGrid: () => {},
   setCameFrom: () => {},
   setWalls: () => {},
