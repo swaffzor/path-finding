@@ -165,11 +165,11 @@ export const reconstructPath = (
     current = cameFrom[current];
 
     if (current === undefined) {
-      console.error("No path found");
+      // console.error("No path found");
       return [];
     }
     if (path.includes(current)) {
-      console.error("Path is not unique");
+      // console.error("Path is not unique");
       console.log(
         JSON.stringify({ current, start, goal, path, cameFrom }, null, 2)
       );

@@ -49,8 +49,12 @@ function App() {
   const [isControlled, setIsControlled] = useState<boolean>(
     JSON.parse(localStorage.getItem("isControlled") || "false") || false
   );
-  const isEscPressed = useKeyPress("Escape");
-
+  const [isEscPressed, setIsEscPressed] = useKeyPress("Escape");
+  const [isPressUp, setIsPressUp] = useKeyPress("ArrowUp");
+  const [isPressDown, setIsPressDown] = useKeyPress("ArrowDown");
+  const [isPressLeft, setIsPressLeft] = useKeyPress("ArrowLeft");
+  const [isPressRight, setIsPressRight] = useKeyPress("ArrowRight");
+  const [isPressSpace, setIsPressSpace] = useKeyPress(" ");
   const setSpeed = (speed: number) => {
     setTheSpeed(speed);
     localStorage.setItem("speed", JSON.stringify(speed));
@@ -203,6 +207,11 @@ function App() {
           goal,
           setGoal,
           currentTile,
+          isPressUp,
+          isPressDown,
+          isPressLeft,
+          isPressRight,
+          isPressSpace,
         }}
       >
         <div className={`p-4 m-8 text-blue-600`}>
@@ -212,14 +221,7 @@ function App() {
           <Grid />
 
           {/* Data Columns */}
-          {!hideData && (
-            <DataPanel
-              cameFrom={cameFrom}
-              frontier={frontier}
-              neighbors={neighbors}
-              currentTile={currentTile}
-            />
-          )}
+          {!hideData && <DataPanel frontier={frontier} neighbors={neighbors} />}
         </div>
       </GameProvider>
     </ConfigProvider>

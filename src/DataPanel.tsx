@@ -1,13 +1,15 @@
+import { useContext } from "react";
+import { GameContext } from "./Context";
 import { Location } from "./types";
 
 interface Props {
-  cameFrom: Record<string, string>;
   frontier: string[];
   neighbors: Location<string>[];
-  currentTile: string;
 }
 
-const DataPanel = ({ cameFrom, frontier, neighbors, currentTile }: Props) => {
+const DataPanel = ({ frontier, neighbors }: Props) => {
+  const { cameFrom, currentTile } = useContext(GameContext);
+
   return (
     <div className="flex *:mr-12">
       <div className="w-20">

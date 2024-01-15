@@ -25,5 +25,5 @@ export const useKeyPress = (targetKey: string) => {
       window.removeEventListener("keyup", upHandler);
     };
   }, []); // Empty array ensures that effect is only run on mount and unmount
-  return keyPressed;
+  return [keyPressed, setKeyPressed];
 };

@@ -43,6 +43,11 @@ interface TileContextType {
   start: string;
   goal: string;
   currentTile: string;
+  isPressUp: boolean;
+  isPressDown: boolean;
+  isPressLeft: boolean;
+  isPressRight: boolean;
+  isPressSpace: boolean;
   setGrid: (grid: string[][]) => void;
   setWalls: (values: Set<string>) => void;
   setCameFrom: (cameFrom: Record<string, string>) => void;
@@ -57,6 +62,11 @@ export const GameContext = createContext<TileContextType>({
   start: "",
   goal: "",
   currentTile: "",
+  isPressUp: false,
+  isPressDown: false,
+  isPressLeft: false,
+  isPressRight: false,
+  isPressSpace: false,
   setGrid: () => {},
   setCameFrom: () => {},
   setWalls: () => {},
